@@ -1,2 +1,0 @@
-# PAL Test Guide
-
