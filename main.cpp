@@ -30,9 +30,9 @@ TODO:
 
 #include <events/mbed_events.h>
 #include <mbed.h>
-#include "ble\BLE.h"
-#include "ble\DiscoveredCharacteristic.h"
-#include "ble\DiscoveredService.h"
+#include "ble/BLE.h"
+#include "ble/DiscoveredCharacteristic.h"
+#include "ble/DiscoveredService.h"
 
 #include "security.h"
 
@@ -92,7 +92,7 @@ uint8_t dataforClient[] = {0};
 uint32_t final_dataforClient = 0;
 
 static EventQueue eventQueue(
-    /* event count */ 16 * /* event size */ 32    
+    /* event count */ 16 * /* event size */ 32
 );
 
 void advertisementCallback(const Gap::AdvertisementCallbackParams_t *params) {
@@ -101,7 +101,7 @@ void advertisementCallback(const Gap::AdvertisementCallbackParams_t *params) {
     // byte 0: length of the record excluding this byte
     // byte 1: The key, it is the type of the data
     // byte [2..N] The value. N is equal to byte0 - 1
-	
+
 	//printf("Starting advertisementCallback...\r\n");
     for (uint8_t i = 0; i < params->advertisingDataLen; ++i) {
 
@@ -162,7 +162,7 @@ void discoveryTerminationCallback(Gap::Handle_t connectionHandle) {
 	if(connectionHandle != 0) {
 //		led2 = 1;
 	}
-	
+
     if (triggerLedCharacteristic) {
         triggerLedCharacteristic = false;
         eventQueue.call(updateLedCharacteristic);
@@ -220,10 +220,10 @@ void bleInitComplete(BLE::InitializationCompleteCallbackContext *params)
 
     if (error != BLE_ERROR_NONE) {
         /* In case of error, forward the error handling to onBleInitError */
-        onBleInitError(ble, error);			
+        onBleInitError(ble, error);
         return;
     }
-		
+
    /* Ensure that it is the default instance of BLE */
     if (ble.getInstanceID() != BLE::DEFAULT_INSTANCE) {
 			printf("Not the default instance\r\n");
@@ -235,14 +235,14 @@ void bleInitComplete(BLE::InitializationCompleteCallbackContext *params)
 
 // On reading data, call triggerRead function.
 ble.gattClient().onDataRead(triggerRead);
-		
+
 		// scan interval: 400ms and scan window: 400ms.
     // Every 400ms the device will scan for 400ms
     // This means that the device will scan continuously.
     ble.gap().setScanParams(400, 400);
  error =   ble.gap().startScan(advertisementCallback);
 		printf("BLE Error startScan = %u\r\n", error);
-		
+
 }
 
 void scheduleBleEventsProcessing(BLE::OnEventsToProcessCallbackContext* context) {
@@ -448,10 +448,10 @@ public:
 	//		printf("%x", dataforClient[i]);
 	//	}
 	//	printf("\r\n");
-		
+
 /***************************  Implement OPT data copy to payload here instead of counter ******************/
-		
-		
+
+
 #ifdef TARGET_K64F
         printf("handle_button_click, new value of counter is %d\r\n", counter);
 #else
@@ -560,7 +560,7 @@ int main() {
 
 	//Create a new thread for BLE
 	Thread BLE_thread;
-	
+
 
 #ifdef MBEDTLS_ENTROPY_HARDWARE_ALT
     // Used to randomize source port
@@ -669,12 +669,12 @@ Add MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES and MBEDTLS_TEST_NULL_ENTROPY in mbed_app
 
 //Start BLE thread after connection is established to device connector. Else, there is conflict.
 	BLE_thread.start(BLE_thread_init);
-	
+
     while (true) {
-		
+
 	printf("inside main for client\n");
     triggerLedCharacteristic = false;
-	
+
         updates.wait(25000);
         if(registered) {
             if(!clicked) {
@@ -688,7 +688,7 @@ Add MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES and MBEDTLS_TEST_NULL_ENTROPY in mbed_app
            clicked = false;
             button_resource.handle_button_click();
         }
-		
+
     }
 
     mbed_client.test_unregister();
