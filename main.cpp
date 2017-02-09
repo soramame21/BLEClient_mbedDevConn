@@ -614,7 +614,7 @@ Add MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES and MBEDTLS_TEST_NULL_ENTROPY in mbed_app
     network_interface = &mesh;
 #endif
     if(connect_success == 0) {
-    output.printf("\n\rConnected to Network successfully\r\n");
+        output.printf("\n\rConnected to Network successfully\r\n");
     } else {
         output.printf("\n\rConnection to Network Failed %d! Exiting application....\r\n", connect_success);
         return 0;
@@ -681,7 +681,7 @@ Add MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES and MBEDTLS_TEST_NULL_ENTROPY in mbed_app
 				//printf("Inside registered ... clicked \r\n");
                 mbed_client.test_update_register();
             }
-        }else {
+        } else {
             break;
         }
         if(clicked) {
