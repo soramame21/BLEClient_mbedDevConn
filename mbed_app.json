@@ -5,8 +5,8 @@
             "value": "ETHERNET"
         },
         "mesh_radio_type": {
-        	"help": "options are ATMEL, MCR20",
-        	"value": "ATMEL"
+            "help": "options are ATMEL, MCR20",
+            "value": "ATMEL"
         },
         "wifi-ssid": {
             "help": "WiFi SSID",
@@ -27,21 +27,21 @@
     },
     "macros": ["MBEDTLS_USER_CONFIG_FILE=\"mbedtls_mbed_client_config.h\""],
     "target_overrides": {
-		"NUCLEO_F429ZI": {
-			"target.features_add": ["BLE"],
-			"target.extra_labels_add": ["ST_BLUENRG"],
-			"target.macros_add": ["IDB0XA1_D13_PATCH"]
-		},
-        "K64F": {
-			"target.features_add": ["BLE"],
-			"target.extra_labels_add": ["ST_BLUENRG"],
-			"target.macros_add": ["IDB0XA1_D13_PATCH"]
-		},
         "*": {
             "target.features_add": ["NANOSTACK", "LOWPAN_ROUTER", "COMMON_PAL"],
             "mbed-mesh-api.6lowpan-nd-channel-page": 0,
             "mbed-mesh-api.6lowpan-nd-channel": 12,
             "mbed-trace.enable": 0
+        },
+        "NUCLEO_F429ZI": {
+            "target.features_add": ["BLE"],
+            "target.extra_labels_add": ["ST_BLUENRG"],
+            "target.macros_add": ["IDB0XA1_D13_PATCH"]
+        },
+        "K64F": {
+            "target.features_add": ["BLE"],
+            "target.extra_labels_add": ["ST_BLUENRG"],
+            "target.macros_add": ["IDB0XA1_D13_PATCH"]
         },
         "NUCLEO_F401RE": {
             "wifi-tx": "PA_11",
