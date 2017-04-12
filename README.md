@@ -202,4 +202,4 @@ Please refer the [details at here](/docs/testing.md)
 
 
 
-Please find the BLE GATT Server application under https://github.com/soramame21/BLEClient_mbedDevConn repo.
+Please find the BLE GATT Server application under https://github.com/soramame21/BLE_Server_BME280 repo.
