@@ -93,10 +93,10 @@ public:
     BME280Resource() {
     	// create Pressure object '3323'.
         for(int m=0; m<HUMIDITY+1; m++) {
-    		    bme280[m] = M2MInterfaceFactory::create_object(objName[m]);
-    		    tmp_inst[m] = bme280[m] ->create_object_instance();
-    		    tmp_res[m] = tmp_inst[m]->create_dynamic_resource("5700", dbg_CharType[m],
-                M2MResourceInstance::STRING, true /* observable */);
+            bme280[m] = M2MInterfaceFactory::create_object(objName[m]);
+            tmp_inst[m] = bme280[m] ->create_object_instance();
+            tmp_res[m] = tmp_inst[m]->create_dynamic_resource("5700", dbg_CharType[m],
+                    M2MResourceInstance::STRING, true /* observable */);
             tmp_res[m]->set_operation(M2MBase::GET_ALLOWED);
             tmp_res[m]->set_value((uint8_t*)"0.0", 3);
         }
@@ -106,23 +106,23 @@ public:
         char tmp_buf[50];
         int len;
         if (h<PRESSURE || h>HUMIDITY) {
-          	printf("data type h (input) is wrong!!");
-          	return;
+            printf("data type h (input) is wrong!!");
+            return;
         }
         if (h==HUMIDITY)
             len=sprintf(tmp_buf,"%0.2f%%",val);
         else if (h==PRESSURE)
-        	  len=sprintf(tmp_buf,"%0.1f hPa",val);
+            len=sprintf(tmp_buf,"%0.1f hPa",val);
         else
-        	  len=sprintf(tmp_buf,"%0.2f degC",val);
+            len=sprintf(tmp_buf,"%0.2f degC",val);
 
-    	  tmp_res[h]->set_value((uint8_t*)tmp_buf, len);
-    	  //printf("set_value(tmp_bug=%s\r\n", tmp_buf);
+        tmp_res[h]->set_value((uint8_t*)tmp_buf, len);
+        //printf("set_value(tmp_bug=%s\r\n", tmp_buf);
     }
 
 
     M2MObject* get_object(int idx) {
- 	      if (idx<PRESSURE || idx>HUMIDITY)    return NULL;
+        if (idx<PRESSURE || idx>HUMIDITY)    return NULL;
         return bme280[idx];
     }
 private:
@@ -193,13 +193,13 @@ void serviceDiscoveryCallback(const DiscoveredService *service) {
     }
 }
 
-/***  
+/***
     This function called read() initially, following read() calls
-	are repeated inside triggerRead function   
+    are repeated inside triggerRead function
 ***/
 void updateLedCharacteristic(void) {
     if (!BLE::Instance().gattClient().isServiceDiscoveryActive()) {
-    		//printf("02  updateLedCharacteristic\n");
+        //printf("02  updateLedCharacteristic\n");
         for(int g=0; g<HUMIDITY+1; g++) {
             if (is_active[g])    bme280Characteristic[g].read();
         }
@@ -209,21 +209,21 @@ void updateLedCharacteristic(void) {
 
 void characteristicDiscoveryCallback(const DiscoveredCharacteristic *characteristicP) {
     int tmp_uuid;
-	  tmp_uuid=characteristicP->getUUID().getShortUUID();
+    tmp_uuid=characteristicP->getUUID().getShortUUID();
     printf("  C UUID-%x valueAttr[%u] props[%x]\r\n", characteristicP->getUUID().getShortUUID(), characteristicP->getValueHandle(), (uint8_t)characteristicP->getProperties().broadcast());
     if ((tmp_uuid < GattCharacteristic::UUID_PRESSURE_CHAR) ||
         (tmp_uuid > GattCharacteristic::UUID_HUMIDITY_CHAR))     return;
     triggerLedCharacteristic = true;
     if (tmp_uuid == GattCharacteristic::UUID_PRESSURE_CHAR) {
-    	  bme280Characteristic[PRESSURE] = *characteristicP;    is_active[PRESSURE] = true;
-    	  printf(" is_active[PRESSURE] = true\r\n");
+        bme280Characteristic[PRESSURE] = *characteristicP;    is_active[PRESSURE] = true;
+        printf(" is_active[PRESSURE] = true\r\n");
     }
     else if (tmp_uuid == GattCharacteristic::UUID_TEMPERATURE_CHAR) {
     	  bme280Characteristic[TEMPERATURE] = *characteristicP;    is_active[TEMPERATURE] = true;
     	  printf(" is_active[TEMPERATURE] = true\r\n");
    } else {
-    	  bme280Characteristic[HUMIDITY] = *characteristicP;    is_active[HUMIDITY] = true;
-    	  printf(" is_active[HUMIDITY] = true\r\n");
+        bme280Characteristic[HUMIDITY] = *characteristicP;    is_active[HUMIDITY] = true;
+        printf(" is_active[HUMIDITY] = true\r\n");
    }
 }
 
@@ -236,8 +236,8 @@ void discoveryTerminationCallback(Gap::Handle_t connectionHandle) {
 }
 
 void connectionCallback(const Gap::ConnectionCallbackParams_t *params) {
-	  int ret;
-	  printf("Connected to BME280 now...\r\n");
+    int ret;
+    printf("Connected to BME280 now...\r\n");
     if (params->role == Gap::CENTRAL) {
         BLE &ble = BLE::Instance();
         ble.gattClient().onServiceDiscoveryTermination(discoveryTerminationCallback);
@@ -250,33 +250,33 @@ void connectionCallback(const Gap::ConnectionCallbackParams_t *params) {
 //ASHOK's triggerRead function
 
 void triggerRead(const GattReadCallbackParams *response) {
-	  int k;
-	  for(int j=0; j<HUMIDITY+1; j++) {
+    int k;
+    for(int j=0; j<HUMIDITY+1; j++) {
         if (is_active[j]) {
             if (response->handle == bme280Characteristic[j].getValueHandle()){
-			          payload_length = response-> len;
-			          for(int i=0; i< response-> len; i++) {
-			              dataforClient[i] = response -> data[i];
-	              }
+                payload_length = response-> len;
+                for(int i=0; i< response-> len; i++) {
+                    dataforClient[i] = response -> data[i];
+                }
                 //BLE packet contains 4 bytes of 8 bit int's each. Combine all of them to form a single 32-bit int.
-		            final_dataforClient = ((uint32_t)dataforClient[3]<<24) | (dataforClient[2]<<16) | (dataforClient[1] << 8) | (dataforClient[0]);
+                final_dataforClient = ((uint32_t)dataforClient[3]<<24) | (dataforClient[2]<<16) | (dataforClient[1] << 8) | (dataforClient[0]);
                 //Ren debug
-		            dataprint[j] = ( j==PRESSURE)?   (float) final_dataforClient/10 : (float) final_dataforClient/100;
-		            demo1->set_bme280_value(dataprint[j], j);
-		            if (j==HUMIDITY) {
-		        	      k=0;   printf("%s  = %0.2f%%   ", dbg_CharType[j], dataprint[j]);
-		            } else
-		            {
-		        	      k=j+1;
-		        	      if(j==PRESSURE)    printf("%s  = %0.1f hPa   ", dbg_CharType[j], dataprint[j]);
-		        	      else   printf("%s  = %0.2f degC   ", dbg_CharType[j], dataprint[j]);
-	              }
-		            break;
-		        }
-		    }
+                dataprint[j] = ( j==PRESSURE)?   (float) final_dataforClient/10 : (float) final_dataforClient/100;
+                demo1->set_bme280_value(dataprint[j], j);
+                if (j==HUMIDITY) {
+                    k=0;   printf("%s  = %0.2f%%   ", dbg_CharType[j], dataprint[j]);
+                } else
+                {
+                    k=j+1;
+                    if(j==PRESSURE)    printf("%s  = %0.1f hPa   ", dbg_CharType[j], dataprint[j]);
+                    else   printf("%s  = %0.2f degC   ", dbg_CharType[j], dataprint[j]);
+                }
+                break;
+            }
+        }
     }
-	  printf("\r\n");
-	  bme280Characteristic[k].read();
+    printf("\r\n");
+    bme280Characteristic[k].read();
 }
 
 // BLE disconnected
@@ -289,12 +289,12 @@ void disconnectionCallback(const Gap::DisconnectionCallbackParams_t *) {
 void onBleInitError(BLE &ble, ble_error_t error)
 {
     /* Initialization error handling should go here */
-	  printf("BLE Error = %u\r\n", error);
+    printf("BLE Error = %u\r\n", error);
 }
 
 void bleInitComplete(BLE::InitializationCompleteCallbackContext *params)
 {
-	  printf("I'm inside BLE init Complete\r\n");
+    printf("I'm inside BLE init Complete\r\n");
     BLE&        ble   = params->ble;
     ble_error_t error = params->error;
 
@@ -315,8 +315,8 @@ void bleInitComplete(BLE::InitializationCompleteCallbackContext *params)
     	  dataprint[i]=0.0;     is_active[i]=false;
     }
 
-	  ble.gap().onDisconnection(disconnectionCallback);
-	  ble.gap().onConnection(connectionCallback);
+    ble.gap().onDisconnection(disconnectionCallback);
+    ble.gap().onConnection(connectionCallback);
 
     // On reading data, call triggerRead function.
     ble.gattClient().onDataRead(triggerRead);
@@ -326,7 +326,7 @@ void bleInitComplete(BLE::InitializationCompleteCallbackContext *params)
     // This means that the device will scan continuously.
     ble.gap().setScanParams(400, 400);
     error =   ble.gap().startScan(advertisementCallback);
-		printf("BLE Error startScan = %u\r\n", error);
+    printf("BLE Error startScan = %u\r\n", error);
 
 }
 
@@ -338,7 +338,7 @@ void scheduleBleEventsProcessing(BLE::OnEventsToProcessCallbackContext* context)
 /************************************************************BLE Stuff to here *********************************/
 
 void blinky() {
-	  green_led = !green_led;
+    green_led = !green_led;
 }
 
 // These are example resource values for the Device Object
@@ -436,13 +436,13 @@ void trace_printer(const char* str) {
 /****************************************************************More BLE Stuff from here****************/
 //BLE thread init and further calls to other BLE methods.
 void BLE_thread_init(void){
-	  printf("I'm inside BLE thread_init.....\r\n");
-	  eventQueue.call_every(500, blinky);
+    printf("I'm inside BLE thread_init.....\r\n");
+    eventQueue.call_every(500, blinky);
     //Schedule events before starting the thread since there might be some missed events while scanning / pairing.
-	  ble.onEventsToProcess(scheduleBleEventsProcessing);
-	  ble.init(bleInitComplete);
+    ble.onEventsToProcess(scheduleBleEventsProcessing);
+    ble.init(bleInitComplete);
     //Loop forever the BLE thread
-	  eventQueue.dispatch_forever();
+    eventQueue.dispatch_forever();
 }
 
 /****************************************************************More BLE Stuff  to here****************/
@@ -453,8 +453,8 @@ int main() {
     unsigned int seed;
     size_t len;
 
-	  //Create a new thread for BLE
-	  Thread BLE_thread;
+    //Create a new thread for BLE
+    Thread BLE_thread;
 
 
 #ifdef MBEDTLS_ENTROPY_HARDWARE_ALT
@@ -578,7 +578,7 @@ Add MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES and MBEDTLS_TEST_NULL_ENTROPY in mbed_app
         updates.wait(25000);
         if(registered) {
             if(!clicked) {
-				        //printf("Inside registered ... clicked \r\n");
+                //printf("Inside registered ... clicked \r\n");
                 mbed_client.test_update_register();
             }
         } else {   // not registered, then stop;

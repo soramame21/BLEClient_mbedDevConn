@@ -1,34 +1,41 @@
-For instructions to get the BLE client working please refer to the repo: https://github.com/ashok-rao/BLE_Client_My_OPT3001.git
+# BLEClient_mbedDevConn
 
-There is a slide deck in the repo that should help with an overview of the entire application. Please refer to this.
+This example includes 2 main features.
+* [**BLE GATT Client** - receiving sensor data on field](#ble-gatt-client-for-bme280)
+* [**mbed Client** - transferring sensor data up on cloud](#mbed-client-on-mbed-os)
 
-# Getting started with mbed Client on mbed OS
 
-This is the mbed Client example for mbed OS. It demonstrates how to register a device with mbed Device Connector, how to read a device/resource and how to deregister. If you are unfamiliar with mbed Device Connector, it is recommended that you read [the introduction to the data model](https://docs.mbed.com/docs/mbed-device-connector-web-interfaces/en/latest/#the-mbed-device-connector-data-model) first.
+# BLE GATT Client for BME280
+
+The ``GattClient`` APIs are used to implement BLE GATT client. this feature communicates with another GATT server device.
+
+1. The GATT Server device - runs the application ``BLE_Server_BME280`` from [ here ](https://github.com/soramame21/BLE_Server_BME280), which broadcasts measured values of BME280 over BLE.
+1. The GATT Client device - runs the application ``BLEClient_mbedDevConn`` to receive broadcast data over BLE.
+
+Please note: The application ``BLEClient_mbedDevConn`` initiates a connection to all ble devices which advertise "BME280" as complete local name. By default, the application `BLE_Server_BME280` advertise "BME280" as complete local name. If you change the local name advertised by the application `BLE_Sever_BME280` you should reflect your change in this (GATT Client) application by changing the value of the constant `PEER_NAME` in `main.cpp`.
+
+# mbed Client on mbed OS
+
+The mbed Client working on mbed OS demonstrates how to register a device with mbed Device Connector, how to read a device/resource and how to deregister. If you are unfamiliar with mbed Device Connector, it is recommended that you read [the introduction to the data model](https://docs.mbed.com/docs/mbed-device-connector-web-interfaces/en/latest/#the-mbed-device-connector-data-model) first.
 
 The application:
 
 * Connects to network via Ethernet connection.
 * Registers with mbed Device Connector.
-* Gives mbed Device Connector access to its resources (currently read only).
-* Reads the light sensor's value & display the same using HTTP GET request.
-* Connect to IBM Watson via API keys and relay the same data to IBM Watson.
-* A Node-RED app is provided in the repo for import under Node-RED in Watson.
-* Configuration of Watson and ARM mbed bridge under Watson is a topic separately dealt with.
+* Gives mbed Device Connector access to its resources (read only).
+* Reads value from the sensor (BME280) & display the same using HTTP GET request.
 
 ## Required hardware
 
-* NUCLEO_F429ZI target platform #(with hardware modification for SB121 and SB122 - the resistor needs to be shorted across SB122 since there is an SPI pin conflict between the arduino connector and the LAN controller).
-* ST BLE shield (X-NUCLEO-IDB05A1)
+* K64F target platform .
+* ST BLE shield X-NUCLEO-IDB05A1 running v7.2 or later firmware. [The latest firmware is at here]( https://developer.mbed.org/teams/ST/code/BlueNRG-MS-Stack-Updater/)
 * 1x micro-USB cable.
 * Ethernet cable and connection to the internet.
 
-## Supported Target hardware configurations
 
- This example has been tested in following configuration
- * NUCLEO_F429ZI (Ethernet)
- 
-Apart from this, this example can work on other mbed OS supported hardware boards which support any of the given network interface including Ethernet, WiFi, Mesh (6LoWPAN) or Thread, provided the configuration fulfills condition that the target hardware has TLS entropy implemented for it and the complete example configuration of mbed Client, selected network interface and mbed OS components fits into hardware's given memory size (Flash size and RAM size). 
+## Tested Target hardware configurations
+
+ * K64F (Ethernet)
 
 ## Requirements for non-K64F boards
 
@@ -44,7 +51,7 @@ Apart from this, this example can work on other mbed OS supported hardware board
 * [ARM mbed account](https://developer.mbed.org/account/login/?next=/).
 * [mbed-cli](https://github.com/ARMmbed/mbed-cli) - to build the example programs. To learn how to build mbed OS applications with mbed-cli, see [the user guide](https://github.com/ARMmbed/mbed-cli/blob/master/README.md).
 * [Serial port monitor](https://developer.mbed.org/handbook/SerialPC#host-interface-and-terminal-applications).
-* IBM Watson account (free account is fine.)
+* [mbed Device Connector account](https://connector.mbed.com/)
 
 ## Application setup
 
@@ -58,12 +65,12 @@ To configure the example application:
 
 ### Connection type
 
-The application uses Ethernet as the default connection type. To change the connection type, set one of them in `mbed_app.json`. For example, to enable 6LoWPAN ND mode:
+The application uses Ethernet as the default connection type. To change the connection type, set one of them in `mbed_app.json`. For example to select ETHERNET.
 
 ```json
     "network-interface": {
         "help": "options are ETHERNET,WIFI,MESH_LOWPAN_ND,MESH_THREAD.",
-        "value": "MESH_LOWPAN_ND"
+        "value": "ETHERNET"
     }
 ```
 
@@ -84,13 +91,13 @@ For running the example application using Ethernet, you need:
 
 ### IP address setup
 
-This example uses IPv4 to communicate with the [mbed Device Connector Server](https://api.connector.mbed.com) except for 6LoWPAN ND and Thread. The example program should automatically get an IPv4 address from the router when connected over Ethernet.
+This example uses IPv4 to communicate with the [mbed Device Connector Server](https://api.connector.mbed.com). The example program should automatically get an IPv4 address from the router when connected over Ethernet.
 
 If your network does not have DHCP enabled, you have to manually assign a static IP address to the board. We recommend having DHCP enabled to make everything run smoothly.
 
 ### Changing socket type
 
-Your device can connect to mbed Device Connector via UDP or TCP binding mode. The default is UDP. The binding mode cannot be changed in 6LoWPAN ND or Thread mode.
+Your device can connect to mbed Device Connector via UDP or TCP binding mode. The default is UDP.
 
 To change the binding mode:
 
@@ -100,7 +107,7 @@ To change the binding mode:
 
 <span class="tips">**Tip:** The instructions in this document remain the same, irrespective of the socket mode you select.</span>
 
-## Building the example
+## Building and running the example
 
 To build the example using mbed CLI:
 
@@ -113,7 +120,7 @@ To build the example using mbed CLI:
 4. To build the application, select the hardware board and build the toolchain using the command:
 
     ```
-    mbed compile -m NUCLEO_F429ZI -t ARM -c
+    mbed compile -m K64F -t ARM -c
     ```
 
     mbed CLI builds a binary file under the project’s `BUILD/` directory.
@@ -122,55 +129,70 @@ To build the example using mbed CLI:
 
 6. Plug the micro-USB cable into the board. The board is listed as a mass-storage device.
 
-8. Drag the binary `BUILD/NUCLEO_F429ZI/ARM/*.bin` to the board to flash the application.
+7. Drag the binary `BUILD/K64F/ARM/*.bin` to the board to flash the application.
 
-9. The board is automatically programmed with the new binary. A flashing LED on it indicates that it is still working. When the LED stops blinking, the board is ready to work.
+8. The board is automatically programmed with the new binary. A flashing LED on it indicates that it is still working. When the LED stops blinking, the board is ready to work.
 
-10. Press the **Reset** button on the board to run the program.
+9. Build and install ``BLE_Server_BME280`` according to [instructions at here](https://github.com/soramame21/BLE_Server_BME280).
+
+10. Press the **Reset** button on K64F board flashed at Step 9 to run the program ``BLEClient_mbedDevConn``.
 
 11. For verification, continue to the [Monitoring the application](#monitoring-the-application) chapter.
 
 ## Monitoring the application
 
-The application prints debug messages over the serial port, so you can monitor its activity with a serial port monitor. The application uses baud rate 9600.
+You need a terminal program to listen to the output through a serial port. You can download one, for example:
 
-<span class="notes">**Note:** Instructions to set this up are located [here](https://developer.mbed.org/handbook/SerialPC#host-interface-and-terminal-applications).</span>
+* Tera Term / PuTTY for Windows.
+* CoolTerm for Mac OS X.
+* GNU Screen for Linux.
+
+To see the application's output:
+
+1. Check which serial port your device is connected to.
+1. Run a terminal program with the correct serial port and set the baud rate to 9600. For example, to use GNU Screen, run: ``screen /dev/tty.usbmodem1412 9600``.
+1. The application should start printing the measured value to the terminal.
+
+**Note:** ``BLEClient_mbedDevConn`` will not run properly if the ``BLE_Server_BME280`` application is not running on a second device. The terminal will show a few print statements, but you will not be able to see received data.
+
+Please refer [more information at here](https://developer.mbed.org/handbook/SerialPC#host-interface-and-terminal-applications).
 
 After connecting, you should see messages about connecting to mbed Device Connector:
 
 ```
-Starting mbed Client example...
-Using <Network Interface>
-
 Connected to Network successfully
-IP address xxx.xxx.xxx.xxx
+IP address 10.128.4.46
 
-SOCKET_MODE : UDP
+SOCKET_MODE : TCP
 Connecting to coap://api.connector.mbed.com:5684
+created bme280 instance now!!
+I'm inside BLE thread_init.....
+I'm inside BLE init Complete
+BLE Error startScan = 0
+inside main for client
 
-```
+Registered object successfully!
+adv peerAddr[df 28 cb 9b 5a b8] rssi -60, isScanResponse 0, AdvertisementType 0
+Connected to BME280 now...
+ble.gattClient().launchServiceDiscovery = 0
+S type short UUID-181a attrs[12 255]
+  C UUID-2a6f valueAttr[14] props[0]
+ is_active[HUMIDITY] = true
+  C UUID-2a6d valueAttr[16] props[0]
+ is_active[PRESSURE] = true
+  C UUID-2a6e valueAttr[18] props[0]
+ is_active[TEMPERATURE] = true
+terminated SD for handle 2049
+Humidity  = 99.50%
+Pressure  = 995.0 hPa
+inside main for client
+Temperature  = 25.69 degC
+Humidity  = 36.00%
+Pressure  = 995.0 hPa
+Temperature  = 25.70 degC```
 
 <span class="notes">**Note:** Device name is the endpoint name you will need later on when [testing the application](https://github.com/ARMmbed/mbed-os-example-client#testing-the-application).</span>
 
 ## Testing the application
 
-1. Flash the application.
-2. Verify that the registration succeeded. You should see `Registered object successfully!` printed to the serial port.
-3. On mbed Device Connector, go to [My devices > Connected devices](https://connector.mbed.com/#endpoints). Your device should be listed here.
-4. Go to [Device Connector > API Console](https://connector.mbed.com/#console).
-5. Click the **Endpoint directory lookups** drop down menu.
-![](/docs/img/ep_lookup.PNG) 
-6. In the menu, click **GET** next to **Endpoint's resource representation**. Select your _endpoint_ and _resource-path_. For example, the _endpoint_ is the identifier of your endpoint that can be found in the `security.h` file as `MBED_ENDPOINT_NAME`. Choose `3200/0/5501`as a resource path and click **TEST API**. 
-7. The value of the light sensror is shown.
-
-<span class="tips">**Tip:** If you get an error, for example `Server Response: 410 (Gone)`, clear your browser's cache, log out, and log back in.</span>
-
-<span class="notes">**Note:** Only GET methods can be executed through [Device Connector > API Console](https://connector.mbed.com/#console). For other methods, check the [mbed Device Connector Quick Start](https://github.com/ARMmbed/mbed-connector-api-node-quickstart).
-
-### Application resources
-
-The application exposes three [resources](https://docs.mbed.com/docs/mbed-device-connector-web-interfaces/en/latest/#the-mbed-device-connector-data-model):
-
-1. `OPT/0/5501`. Light sensor's readings (GET).
-
-To learn how to get notifications when resource 1 changes, or how to use resources 2 and 3, read the [mbed Device Connector Quick Start](https://github.com/ARMmbed/mbed-connector-api-node-quickstart).
+Please refer the [details at here](/docs/testing.md)
