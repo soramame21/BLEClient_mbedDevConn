@@ -5,7 +5,7 @@
 3. On mbed Device Connector, go to [My devices > Connected devices](https://connector.mbed.com/#endpoints). Your device should be listed here.
 4. Go to [Device Connector > API Console](https://connector.mbed.com/#console).
 5. Click the **Endpoint directory lookups** drop down menu.
-![](/img/ep_lookup.PNG)
+![](/docs/img/ep_lookup.PNG)
 6. In the menu, click **GET** next to **Endpoint's resource representation**. Select your _endpoint_ and _resource-path_. For example, the _endpoint_ is the identifier of your endpoint that can be found in the `security.h` file as `MBED_ENDPOINT_NAME`. Choose `/3303/0/5700`as a resource path and click **TEST API**.
 7. The temperature value from BME280 is shown.
 

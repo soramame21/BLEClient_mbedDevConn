@@ -188,7 +188,7 @@ inside main for client
 Temperature  = 25.69 degC
 Humidity  = 36.00%
 Pressure  = 995.0 hPa
-Temperature  = 25.70 degC```
+Temperature  = 25.70 degC
 ```
 <span class="notes">**Note:** Device name is the endpoint name you will need later on when [testing the application](https://github.com/ARMmbed/mbed-os-example-client#testing-the-application).</span>
 
