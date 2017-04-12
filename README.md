@@ -28,10 +28,15 @@ The application:
 ## Required hardware
 
 * K64F target platform .
-* ST BLE shield X-NUCLEO-IDB05A1 running v7.2 or later firmware. [The latest firmware is at here]( https://developer.mbed.org/teams/ST/code/BlueNRG-MS-Stack-Updater/)
+* ST BLE shield [X-NUCLEO-IDB05A1](http://www.st.com/ja/ecosystems/x-nucleo-idb05a1.html) running v7.2 or later firmware. [The latest firmware is at here]( https://developer.mbed.org/teams/ST/code/BlueNRG-MS-Stack-Updater/)
 * 1x micro-USB cable.
 * Ethernet cable and connection to the internet.
 
+## Required hardware patch on [X-NUCLEO-IDB05A1](http://www.st.com/ja/ecosystems/x-nucleo-idb05a1.html)
+Following hardware patch, which let it becomes fully Arduino compatible, is required to work with K64F. it means that using pin D13 to drive SPI clock. please read further [details at here](https://developer.mbed.org/teams/ST/code/X_NUCLEO_IDB0XA1/)
+
+* Removing zero resistor R4
+* Soldering zero resistor R6
 
 ## Tested Target hardware configurations
 
