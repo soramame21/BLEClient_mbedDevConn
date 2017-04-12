@@ -135,7 +135,7 @@ To build the example using mbed CLI:
 
 9. Build and install ``BLE_Server_BME280`` according to [instructions at here](https://github.com/soramame21/BLE_Server_BME280).
 
-10. Press the **Reset** button on K64F board flashed at Step 9 to run the program ``BLEClient_mbedDevConn``.
+10. Press the **Reset** button on K64F board flashed at Step 8 to run the program ``BLEClient_mbedDevConn``.
 
 11. For verification, continue to the [Monitoring the application](#monitoring-the-application) chapter.
 
@@ -155,7 +155,6 @@ To see the application's output:
 
 **Note:** ``BLEClient_mbedDevConn`` will not run properly if the ``BLE_Server_BME280`` application is not running on a second device. The terminal will show a few print statements, but you will not be able to see received data.
 
-Please refer [more information at here](https://developer.mbed.org/handbook/SerialPC#host-interface-and-terminal-applications).
 
 After connecting, you should see messages about connecting to mbed Device Connector:
 
@@ -190,7 +189,7 @@ Temperature  = 25.69 degC
 Humidity  = 36.00%
 Pressure  = 995.0 hPa
 Temperature  = 25.70 degC```
-
+```
 <span class="notes">**Note:** Device name is the endpoint name you will need later on when [testing the application](https://github.com/ARMmbed/mbed-os-example-client#testing-the-application).</span>
 
 ## Testing the application
