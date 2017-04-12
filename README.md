@@ -33,7 +33,7 @@ The application:
 * Ethernet cable and connection to the internet.
 
 ## Required hardware patch on [X-NUCLEO-IDB05A1](http://www.st.com/ja/ecosystems/x-nucleo-idb05a1.html)
-Following hardware patch, which let it becomes fully Arduino compatible, is required to work with K64F. it means that using pin D13 to drive SPI clock. please read further [details at here](https://developer.mbed.org/teams/ST/code/X_NUCLEO_IDB0XA1/)
+Following hardware patch, which let it becomes fully Arduino compatible, is required to work with K64F. it is called "D13 patch" for enabling pin D13 to drive SPI clock. please read further [details at here](https://developer.mbed.org/teams/ST/code/X_NUCLEO_IDB0XA1/)
 
 * Removing zero resistor R4
 * Soldering zero resistor R6
