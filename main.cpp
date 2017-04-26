@@ -139,9 +139,7 @@ BLE &ble = BLE::Instance();
 static DiscoveredCharacteristic bme280Characteristic[HUMIDITY+1];
 static bool triggerLedCharacteristic;
 static const char PEER_NAME[] = "BME280";
-uint16_t payload_length = 0;
-uint8_t dataforClient[] = {0};
-uint32_t final_dataforClient = 0;
+
 
 static EventQueue eventQueue(
     /* event count */ 16 * /* event size */ 32
@@ -250,14 +248,20 @@ void connectionCallback(const Gap::ConnectionCallbackParams_t *params) {
 //ASHOK's triggerRead function
 
 void triggerRead(const GattReadCallbackParams *response) {
-    int k;
+    int k=0;
+    uint8_t dataforClient[4] = {0,0,0,0};
+    uint32_t final_dataforClient = 0;
     for(int j=0; j<HUMIDITY+1; j++) {
         if (is_active[j]) {
             if (response->handle == bme280Characteristic[j].getValueHandle()){
-                payload_length = response-> len;
+                if ( response-> len > 4) {
+                    printf("response-> len is wrong :%d, %s, skipping read", response-> len, dbg_CharType[j]);
+                    break;
+                }
                 for(int i=0; i< response-> len; i++) {
                     dataforClient[i] = response -> data[i];
                 }
+                printf("%d B, ", response->len);
                 //BLE packet contains 4 bytes of 8 bit int's each. Combine all of them to form a single 32-bit int.
                 final_dataforClient = ((uint32_t)dataforClient[3]<<24) | (dataforClient[2]<<16) | (dataforClient[1] << 8) | (dataforClient[0]);
                 //Ren debug
