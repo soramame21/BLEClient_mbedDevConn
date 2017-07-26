@@ -29,8 +29,9 @@
 
 #include "security.h"
 
-#include "mbed.h"
+//#include "mbed.h"
 #include "rtos.h"
+#include "MiCS6814_GasSensor.h"
 
 #if MBED_CONF_APP_NETWORK_INTERFACE == WIFI
 #include "ESP8266Interface.h"
@@ -93,9 +94,10 @@ public:
     BME280Resource() {
     	// create Pressure object '3323'.
         for(int m=0; m<HUMIDITY+1; m++) {
+        	M2MObjectInstance* tmp_inst;
             bme280[m] = M2MInterfaceFactory::create_object(objName[m]);
-            tmp_inst[m] = bme280[m] ->create_object_instance();
-            tmp_res[m] = tmp_inst[m]->create_dynamic_resource("5700", dbg_CharType[m],
+            tmp_inst = bme280[m] ->create_object_instance();
+            tmp_res[m] = tmp_inst->create_dynamic_resource("5700", dbg_CharType[m],
                     M2MResourceInstance::STRING, true /* observable */);
             tmp_res[m]->set_operation(M2MBase::GET_ALLOWED);
             tmp_res[m]->set_value((uint8_t*)"0.0", 3);
@@ -127,12 +129,77 @@ public:
     }
 private:
     M2MObject*  bme280[HUMIDITY+1];
-    M2MObjectInstance* tmp_inst[HUMIDITY+1];
+//    M2MObjectInstance* tmp_inst[HUMIDITY+1];
     M2MResource* tmp_res[HUMIDITY+1];
 };
 
 static BME280Resource *demo1;
-// Ren, end
+// end of BME280 resource definition
+
+const char * dbg_gasType[C2H5OH+1]={"CO","NO2","NH3","C3H8","C4H10","CH4", "H2", "C2H5OH"};
+const char * gas_objID[C2H5OH+1]={"27000","27001","27002","27003","27004","27005", "27006", "27007" };
+
+/*
+ * The  MiCS-6814 Multichannel Gas Sensor (seeed) contains 8 float properties.
+ * Those are connected directly.
+ */
+class MiCS6814_Resource {
+public:
+	MiCS6814_Resource() {
+    	// create CO object '27000'.
+        for(int m=0; m<C2H5OH+1; m++) {
+        	M2MObjectInstance* gas_inst;
+        	MiCS6814_Gas[m] = M2MInterfaceFactory::create_object(gas_objID[m]);
+            gas_inst = MiCS6814_Gas[m] ->create_object_instance();
+            gas_res[m] = gas_inst->create_dynamic_resource("5700", dbg_gasType[m],
+                    M2MResourceInstance::STRING, true /* observable */);
+            gas_res[m]->set_operation(M2MBase::GET_ALLOWED);
+            gas_res[m]->set_value((uint8_t*)"0.00", 3);
+        }
+    }
+
+    void set_MiCS6814_value(float val, int h){
+        char tmp_buf[50];
+        int len;
+        if (h<CO || h>C2H5OH) {
+            printf("gas type h (input) is wrong!!");
+            return;
+        }
+        len=sprintf(tmp_buf,"%0.2f ppm",val);
+
+        gas_res[h]->set_value((uint8_t*)tmp_buf, len);
+        printf("set_value(%s) = %s\r\n", dbg_gasType[h], tmp_buf);
+    }
+
+
+    M2MObject* get_object(int idx) {
+        if (idx<CO || idx>C2H5OH)    return NULL;
+        return MiCS6814_Gas[idx];
+    }
+private:
+    M2MObject*  MiCS6814_Gas[C2H5OH+1];
+//    M2MObjectInstance* gas_inst[C2H5OH+1];
+    M2MResource* gas_res[C2H5OH+1];
+};
+
+static MiCS6814_Resource _gasSensor_res;
+
+static Ticker set_gasValue_timer;
+
+#if defined(TARGET_LPC1768)
+MiCS6814_GasSensor Multi_gas_sensor(p28, p27);
+#else
+MiCS6814_GasSensor Multi_gas_sensor(I2C_SDA, I2C_SCL);
+#endif
+
+void read_gas_val(){
+	for(int m=0; m<C2H5OH+1; m++) {
+		_gasSensor_res.set_MiCS6814_value(Multi_gas_sensor.getGas((GAS_TYPE)m),m);
+	}
+}
+
+// Ren, end of MiCS6814_GasResource definition
+
 
 /************************************************************BLE Stuff from here *********************************/
 BLE &ble = BLE::Instance();
@@ -362,6 +429,7 @@ volatile bool registered = false;
 volatile bool clicked = false;
 osThreadId mainThread;
 
+
 #ifdef TARGET_K64F
 // Set up Hardware interrupt button.
 InterruptIn obs_button(SW2);
@@ -562,6 +630,14 @@ Add MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES and MBEDTLS_TEST_NULL_ENTROPY in mbed_app
     object_list.push_back(demo1->get_object(PRESSURE));
     object_list.push_back(demo1->get_object(TEMPERATURE));
     object_list.push_back(demo1->get_object(HUMIDITY));
+    object_list.push_back(_gasSensor_res.get_object(NH3));
+    object_list.push_back(_gasSensor_res.get_object(CO));
+    object_list.push_back(_gasSensor_res.get_object(NO2));
+    object_list.push_back(_gasSensor_res.get_object(C3H8));
+    object_list.push_back(_gasSensor_res.get_object(C4H10));
+    object_list.push_back(_gasSensor_res.get_object(CH4));
+    object_list.push_back(_gasSensor_res.get_object(H2));
+    object_list.push_back(_gasSensor_res.get_object(C2H5OH));
 
     // Set endpoint registration object
     mbed_client.set_register_object(register_object);
@@ -574,6 +650,8 @@ Add MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES and MBEDTLS_TEST_NULL_ENTROPY in mbed_app
 	  BLE_thread.start(BLE_thread_init);
     // waiting for completion of BLE_thread_init
     Thread::wait(2000);
+
+    set_gasValue_timer.attach(&read_gas_val, 6.0);
     while (true) {
 
 	      printf("inside main for client\r\n");
