@@ -76,9 +76,9 @@ DigitalOut blue_led(LED3);
 Ticker status_ticker;
 // Ren, begin
 enum charType {
-	PRESSURE,
-	TEMPERATURE,
-	HUMIDITY
+    PRESSURE,
+    TEMPERATURE,
+    HUMIDITY
 };
 const char * dbg_CharType[HUMIDITY+1]={"Pressure","Temperature","Humidity"};
 const char * objName[HUMIDITY+1]={"3323","3303","3304"};
@@ -91,9 +91,9 @@ static float dataprint[HUMIDITY+1]={0,0,0};
 class BME280Resource {
 public:
     BME280Resource() {
-    	// create Pressure object '3323'.
+        // create Pressure object '3323'.
         for(int m=0; m<HUMIDITY+1; m++) {
-        	M2MObjectInstance* tmp_inst;
+            M2MObjectInstance* tmp_inst;
             bme280[m] = M2MInterfaceFactory::create_object(objName[m]);
             tmp_inst = bme280[m] ->create_object_instance();
             tmp_res[m] = tmp_inst->create_dynamic_resource("5700", dbg_CharType[m],
@@ -154,7 +154,7 @@ void advertisementCallback(const Gap::AdvertisementCallbackParams_t *params) {
     // byte 1: The key, it is the type of the data
     // byte [2..N] The value. N is equal to byte0 - 1
 
-  	//printf("Starting advertisementCallback...\r\n");
+    //printf("Starting advertisementCallback...\r\n");
     for (uint8_t i = 0; i < params->advertisingDataLen; ++i) {
 
         const uint8_t record_length = params->advertisingData[i];
@@ -219,8 +219,8 @@ void characteristicDiscoveryCallback(const DiscoveredCharacteristic *characteris
         printf(" is_active[PRESSURE] = true\r\n");
     }
     else if (tmp_uuid == GattCharacteristic::UUID_TEMPERATURE_CHAR) {
-    	  bme280Characteristic[TEMPERATURE] = *characteristicP;    is_active[TEMPERATURE] = true;
-    	  printf(" is_active[TEMPERATURE] = true\r\n");
+        bme280Characteristic[TEMPERATURE] = *characteristicP;    is_active[TEMPERATURE] = true;
+        printf(" is_active[TEMPERATURE] = true\r\n");
    } else {
         bme280Characteristic[HUMIDITY] = *characteristicP;    is_active[HUMIDITY] = true;
         printf(" is_active[HUMIDITY] = true\r\n");
@@ -318,7 +318,7 @@ void bleInitComplete(BLE::InitializationCompleteCallbackContext *params)
 
     // Ren, clear discovered Characteristic at beginning
     for(int i=0; i<HUMIDITY+1; i++)   {
-    	  dataprint[i]=0.0;     is_active[i]=false;
+        dataprint[i]=0.0;     is_active[i]=false;
     }
 
     ble.gap().onDisconnection(disconnectionCallback);
